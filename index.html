@@ -236,6 +236,10 @@ pre .cm{color:#7b8ba3} pre .kw{color:#ff9e64} pre .fn{color:#7dd3fc} pre .st{col
 .tmpl-panel{display:none} .tmpl-panel.show{display:block}
 .copy-btn{float:right;font-size:.72rem;font-family:var(--font-m);background:linear-gradient(135deg,var(--grape-2),var(--grape));color:#fff;border:1px solid rgba(255,255,255,.12);padding:5px 11px;border-radius:7px;cursor:pointer;margin-bottom:4px;box-shadow:var(--glow-grape);transition:box-shadow .2s,transform .2s}
 .copy-btn:hover{background:var(--grape);box-shadow:var(--glow-grape),0 0 24px rgba(123,63,176,.35);transform:translateY(-1px)}
+.lang-tabs{display:flex;gap:6px;margin-bottom:10px}
+.lang-tab{font-family:var(--font-d);font-size:.8rem;font-weight:600;padding:7px 16px;border-radius:9px 9px 0 0;border:1px solid var(--glass-border);background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--slate);cursor:pointer;transition:.2s;border-bottom:none}
+.lang-tab:hover{color:var(--body-fg)}
+.lang-tab.active{background:var(--badge-bg);color:var(--badge-fg);box-shadow:0 0 16px rgba(13,27,42,.2)}
 
 /* decision tree */
 .tree{background:var(--panel);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--glass-border);border-radius:16px;padding:20px;box-shadow:var(--shadow);overflow-x:auto;transition:box-shadow .25s}
@@ -318,7 +322,7 @@ select.btn.ghost{background:var(--input-bg);color:var(--input-fg)}
     </div>
     <div class="mobile-nav" id="mnav"></div>
     <div class="content" id="content"></div>
-    <div class="footer">Built as a self-contained handbook · Progress saved to this device · C++-first<br><span style="font-size:.7rem;margin-top:4px;display:block;color:var(--slate)">Thought and created by <b>nikhilrai</b> · Hosted and powered by <b>yashkiradoo</b></span></div>
+    <div class="footer">Built as a self-contained handbook · Progress saved to this device · C++-first<br><span style="font-size:.7rem;margin-top:4px;display:block;color:var(--slate)">Thought and created by <b>NIKHIL RAI</b> · Hosted and powered by <b>YASH KIRADOO</b></span></div>
   </div>
 </div>
 <script>
@@ -855,7 +859,7 @@ const COMPANIES = [
 ];
 
 // ---- C++ templates ----
-const TEMPLATES = {
+const TEMPLATES_CPP = {
 "Binary Search":`int binarySearch(vector<int>& a, int target){
   int lo = 0, hi = a.size() - 1;
   while (lo <= hi){
@@ -1134,6 +1138,290 @@ bool hasCycle(ListNode* head){
   return false;
 }`,
 };
+
+// ---- Java templates (same topics, Java syntax) ----
+const TEMPLATES_JAVA = {
+"Binary Search":`int binarySearch(int[] a, int target){
+  int lo = 0, hi = a.length - 1;
+  while (lo <= hi){
+    int mid = lo + (hi - lo) / 2;   // overflow-safe
+    if (a[mid] == target) return mid;
+    else if (a[mid] < target) lo = mid + 1;
+    else hi = mid - 1;
+  }
+  return -1;   // not found
+}
+
+// Binary search on ANSWER
+int minFeasible(int lo, int hi){
+  while (lo < hi){
+    int mid = lo + (hi - lo) / 2;
+    if (feasible(mid)) hi = mid;    // shrink toward smaller feasible
+    else lo = mid + 1;
+  }
+  return lo;
+}`,
+"DFS (graph)":`void dfs(int node, List<List<Integer>> adj, boolean[] seen){
+  seen[node] = true;
+  for (int next : adj.get(node))
+    if (!seen[next]) dfs(next, adj, seen);
+}
+
+// Grid DFS
+int[] dx = {0, 1, 0, -1};
+int[] dy = {1, 0, -1, 0};
+void dfsGrid(char[][] g, int r, int c){
+  int rows = g.length, cols = g[0].length;
+  if (r < 0 || c < 0 || r >= rows || c >= cols || g[r][c] != '1') return;
+  g[r][c] = '0';                    // mark visited
+  for (int i = 0; i < 4; i++)
+    dfsGrid(g, r + dx[i], c + dy[i]);
+}`,
+"BFS (graph)":`int bfs(List<List<Integer>> adj, int start, int n){
+  boolean[] seen = new boolean[n];
+  Queue<Integer> q = new LinkedList<>();
+  q.add(start); seen[start] = true;
+  int level = 0;
+  while (!q.isEmpty()){
+    int sz = q.size();
+    for (int i = 0; i < sz; i++){
+      int cur = q.poll();
+      for (int nx : adj.get(cur))
+        if (!seen[nx]){ seen[nx] = true; q.add(nx); }
+    }
+    level++;                        // one BFS layer done
+  }
+  return level;
+}`,
+"Union-Find":`class DSU {
+  int[] parent, rank;
+  DSU(int n){
+    parent = new int[n]; rank = new int[n];
+    for(int i = 0; i < n; i++) parent[i] = i;
+  }
+  int find(int x){
+    if(parent[x] != x) parent[x] = find(parent[x]); // path compression
+    return parent[x];
+  }
+  boolean union(int a, int b){
+    int ra = find(a), rb = find(b);
+    if(ra == rb) return false;                      // already connected
+    if(rank[ra] < rank[rb]){ int t = ra; ra = rb; rb = t; }
+    parent[rb] = ra;
+    if(rank[ra] == rank[rb]) rank[ra]++;
+    return true;
+  }
+}`,
+"Trie":`class Trie {
+  class TrieNode {
+    TrieNode[] child = new TrieNode[26];
+    boolean isEnd = false;
+  }
+  TrieNode root = new TrieNode();
+
+  void insert(String w){
+    TrieNode n = root;
+    for(char c : w.toCharArray()){
+      int i = c - 'a';
+      if(n.child[i] == null) n.child[i] = new TrieNode();
+      n = n.child[i];
+    }
+    n.isEnd = true;
+  }
+  boolean search(String w){
+    TrieNode n = root;
+    for(char c : w.toCharArray()){
+      int i = c - 'a';
+      if(n.child[i] == null) return false;
+      n = n.child[i];
+    }
+    return n.isEnd;
+  }
+}`,
+"Heap / PQ":`// Min-heap (default)
+PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+// Max-heap
+PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Collections.reverseOrder());
+
+// Top-K largest: keep MIN-heap of size K
+PriorityQueue<Integer> pq = new PriorityQueue<>();
+for(int x : nums){
+  pq.add(x);
+  if(pq.size() > k) pq.poll();      // drop smallest
+}
+int kthLargest = pq.peek();
+
+// PQ of pairs (int[]) by cost
+PriorityQueue<int[]> byCost = new PriorityQueue<>((a, b) -> a[1] - b[1]);`,
+"Monotonic Stack":`// Next Greater Element to the right
+int[] nextGreater(int[] a){
+  int n = a.length;
+  int[] res = new int[n];
+  Arrays.fill(res, -1);
+  Deque<Integer> st = new ArrayDeque<>();   // stores indices
+  for(int i = 0; i < n; i++){
+    while(!st.isEmpty() && a[st.peek()] < a[i]){
+      res[st.pop()] = a[i];
+    }
+    st.push(i);
+  }
+  return res;
+}`,
+"Sliding Window":`// Variable window: longest substring with condition
+int longest(String s){
+  int[] cnt = new int[256];
+  int left = 0, best = 0;
+  for(int right = 0; right < s.length(); right++){
+    cnt[s.charAt(right)]++;
+    while(/* window invalid */ cnt[s.charAt(right)] > 1){
+      cnt[s.charAt(left++)]--;       // shrink
+    }
+    best = Math.max(best, right - left + 1);
+  }
+  return best;
+}`,
+"Two Pointers":`int[] twoSumSorted(int[] a, int target){
+  int i = 0, j = a.length - 1;
+  while(i < j){
+    int sum = a[i] + a[j];
+    if(sum == target) return new int[]{i, j};
+    else if(sum < target) i++;
+    else j--;
+  }
+  return new int[]{-1, -1};
+}`,
+"Prefix Sum":`// Count subarrays summing to k
+int subarraySum(int[] a, int k){
+  Map<Integer, Integer> seen = new HashMap<>();
+  seen.put(0, 1);                   // empty prefix seed
+  int sum = 0, count = 0;
+  for(int x : a){
+    sum += x;
+    count += seen.getOrDefault(sum - k, 0);
+    seen.put(sum, seen.getOrDefault(sum, 0) + 1);
+  }
+  return count;
+}`,
+"Backtracking":`void backtrack(int start, List<Integer> path,
+               int[] nums, List<List<Integer>> res){
+  res.add(new ArrayList<>(path));   // record (copy!)
+  for(int i = start; i < nums.length; i++){
+    path.add(nums[i]);              // choose
+    backtrack(i + 1, path, nums, res); // explore
+    path.remove(path.size() - 1);   // un-choose
+  }
+}`,
+"DP (memo→table)":`// Top-down memoization
+Map<Integer, Integer> memo = new HashMap<>();
+int dp(int i, int[] a){
+  if(i >= a.length) return 0;
+  if(memo.containsKey(i)) return memo.get(i);
+  int take = a[i] + dp(i + 2, a);
+  int skip = dp(i + 1, a);
+  int res = Math.max(take, skip);
+  memo.put(i, res);
+  return res;
+}
+
+// Bottom-up table (House Robber)
+int rob(int[] a){
+  int prev2 = 0, prev1 = 0;
+  for(int x : a){
+    int cur = Math.max(prev1, prev2 + x);
+    prev2 = prev1; prev1 = cur;
+  }
+  return prev1;
+}`,
+"Dijkstra":`int[] dijkstra(List<List<int[]>> adj, int src, int n){
+  int[] dist = new int[n];
+  Arrays.fill(dist, Integer.MAX_VALUE);
+  dist[src] = 0;
+  PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+  pq.add(new int[]{0, src});        // {dist, node}
+  while(!pq.isEmpty()){
+    int[] cur = pq.poll();
+    int d = cur[0], u = cur[1];
+    if(d > dist[u]) continue;       // stale entry
+    for(int[] edge : adj.get(u)){   // {to, weight}
+      int to = edge[0], w = edge[1];
+      if(dist[u] + w < dist[to]){
+        dist[to] = dist[u] + w;
+        pq.add(new int[]{dist[to], to});
+      }
+    }
+  }
+  return dist;
+}`,
+"Topological Sort":`List<Integer> topo(int n, List<List<Integer>> adj){
+  int[] indeg = new int[n];
+  for(List<Integer> es : adj)
+    for(int v : es) indeg[v]++;
+  Queue<Integer> q = new LinkedList<>();
+  for(int i = 0; i < n; i++)
+    if(indeg[i] == 0) q.add(i);
+  List<Integer> order = new ArrayList<>();
+  while(!q.isEmpty()){
+    int u = q.poll();
+    order.add(u);
+    for(int v : adj.get(u))
+      if(--indeg[v] == 0) q.add(v);
+  }
+  return order.size() == n ? order : new ArrayList<>(); // empty = cycle
+}`,
+"Tree Traversals":`// Iterative inorder
+List<Integer> inorder(TreeNode root){
+  List<Integer> res = new ArrayList<>();
+  Deque<TreeNode> st = new ArrayDeque<>();
+  TreeNode cur = root;
+  while(cur != null || !st.isEmpty()){
+    while(cur != null){ st.push(cur); cur = cur.left; }
+    cur = st.pop();
+    res.add(cur.val);
+    cur = cur.right;
+  }
+  return res;
+}
+// Level order (BFS)
+List<List<Integer>> levelOrder(TreeNode root){
+  List<List<Integer>> res = new ArrayList<>();
+  if(root == null) return res;
+  Queue<TreeNode> q = new LinkedList<>();
+  q.add(root);
+  while(!q.isEmpty()){
+    int sz = q.size();
+    List<Integer> lvl = new ArrayList<>();
+    for(int i = 0; i < sz; i++){
+      TreeNode n = q.poll();
+      lvl.add(n.val);
+      if(n.left != null) q.add(n.left);
+      if(n.right != null) q.add(n.right);
+    }
+    res.add(lvl);
+  }
+  return res;
+}`,
+"Linked List":`// Reverse
+ListNode reverse(ListNode head){
+  ListNode prev = null;
+  while(head != null){
+    ListNode nxt = head.next;
+    head.next = prev;
+    prev = head; head = nxt;
+  }
+  return prev;
+}
+// Fast/slow: find middle + detect cycle
+boolean hasCycle(ListNode head){
+  ListNode slow = head, fast = head;
+  while(fast != null && fast.next != null){
+    slow = slow.next; fast = fast.next.next;
+    if(slow == fast) return true;
+  }
+  return false;
+}`,
+};
+
+const TEMPLATES = { cpp: TEMPLATES_CPP, java: TEMPLATES_JAVA };
 
 // ---- Complexity cheat sheet ----
 const COMPLEXITY = [
@@ -1594,14 +1882,19 @@ function renderComplexity(){
 }
 
 /* ---------------- TEMPLATES ---------------- */
+let TMPL_LANG = 'cpp';
 function renderTemplates(){
-  const names=Object.keys(TEMPLATES);
+  const names=Object.keys(TEMPLATES.cpp);
   let tabs=names.map((n,i)=>`<button class="tmpl-tab ${i===0?'active':''}" data-i="${i}">${esc(n)}</button>`).join('');
   let panels=names.map((n,i)=>`<div class="tmpl-panel ${i===0?'show':''}" data-i="${i}">
     <button class="copy-btn" data-copy="${i}">Copy</button>
-    <pre><code>${esc(TEMPLATES[n])}</code></pre></div>`).join('');
-  return `<div class="eyebrow">Part 12</div><div class="h-lead">C++ Templates</div>
-  <p class="lead-txt">Interview-ready, reusable skeletons. Learn to reproduce every one from a blank editor by Day 56 — the syntax should be muscle memory so your mind stays on the problem.</p>
+    <pre><code>${esc(TEMPLATES[TMPL_LANG][n])}</code></pre></div>`).join('');
+  return `<div class="eyebrow">Part 12</div><div class="h-lead">Code Templates</div>
+  <p class="lead-txt">Interview-ready, reusable skeletons in C++ and Java. Learn to reproduce every one from a blank editor by Day 56 — the syntax should be muscle memory so your mind stays on the problem.</p>
+  <div class="lang-tabs">
+    <button class="lang-tab ${TMPL_LANG==='cpp'?'active':''}" data-lang="cpp">C++</button>
+    <button class="lang-tab ${TMPL_LANG==='java'?'active':''}" data-lang="java">Java</button>
+  </div>
   <div class="tmpl-tabs">${tabs}</div>${panels}`;
 }
 
@@ -1726,13 +2019,17 @@ function attachPageHandlers(id){
     sel.onchange=()=>drawCompany(+sel.value);
   }
   if(id==='templates'){
+    document.querySelectorAll('.lang-tab').forEach(t=>t.onclick=()=>{
+      TMPL_LANG = t.dataset.lang;
+      go('templates');
+    });
     document.querySelectorAll('.tmpl-tab').forEach(t=>t.onclick=()=>{
       const i=t.dataset.i;
       document.querySelectorAll('.tmpl-tab').forEach(x=>x.classList.toggle('active',x.dataset.i===i));
       document.querySelectorAll('.tmpl-panel').forEach(x=>x.classList.toggle('show',x.dataset.i===i));
     });
     document.querySelectorAll('.copy-btn').forEach(b=>b.onclick=()=>{
-      const names=Object.keys(TEMPLATES); const txt=TEMPLATES[names[+b.dataset.copy]];
+      const names=Object.keys(TEMPLATES[TMPL_LANG]); const txt=TEMPLATES[TMPL_LANG][names[+b.dataset.copy]];
       navigator.clipboard.writeText(txt).then(()=>{b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1200)});
     });
   }
